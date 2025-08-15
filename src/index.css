@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  /* colors */
+  --color-theme-red: #E43636;
+  --color-theme-white: #F6EFD2;
+  --color-theme-grey: #E2DDB4;
+  --color-theme-pale: #F6EFD2;
+
+  /* fonts */
+  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-serif: 'EB Garamond', ui-serif, serif;
+}
