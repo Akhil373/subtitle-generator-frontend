@@ -44,7 +44,7 @@ const BlurText: React.FC<BlurTextProps> = ({
   animationTo,
   easing = (t) => t,
   onAnimationComplete,
-  stepDuration = 0.35,
+  stepDuration = 0.4,
 }) => {
   // Split text based on animation type
   const elements = useMemo(() => {

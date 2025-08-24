@@ -7,10 +7,8 @@ const FilesDragDrop = () => {
 
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault()
-        const items = e.dataTransfer.items
         e.dataTransfer.dropEffect = "copy"
         setIsDragging(true)
-        console.log(items)
     }
 
     const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -18,9 +16,8 @@ const FilesDragDrop = () => {
         setIsDragging(false)
         const dropped = Array.from(e.dataTransfer.items)
         setFiles(dropped)
+        console.log(files)
     }
-
-    console.log(files)
 
     return (
         <div
@@ -31,10 +28,10 @@ const FilesDragDrop = () => {
             onDrop={handleDrop}
         >
             <div
-                className={`p-[128px] flex gap-3 flex-col items-center justify-center h-[128px] border-4 border-dashed border-white w-fit rounded-3xl
+                className={`p-[128px] flex gap-3 flex-col items-center justify-center h-[128px] border-4 border-dashed border-white w-[300px] md:w-fit rounded-3xl
             ${isDragging ? " bg-theme-red" : ""}`}
             >
-                <p>
+                <p className="text-nowrap">
                     {isDragging ? (
                         "Drop it!"
                     ) : (
@@ -47,10 +44,10 @@ const FilesDragDrop = () => {
                 <div>
                     <label
                         htmlFor="file-input"
-                        className="cursor-pointer bg-theme-red hover:bg-red-700 text-black px-4 py-2 rounded-xl font-medium transition-colors duration-200 flex items-center gap-2 shadow-lg"
+                        className="cursor-pointer bg-theme-red hover:bg-red-700 text-black px-4 py-2 rounded-xl font-medium transition-colors duration-200 flex items-center gap-2 shadow-lg w-[128px]"
                     >
-                        <img src="files.svg" alt="file upload" className="w-10" />
-                        Choose Files
+                        <img src="files.svg" alt="file upload" className="w-10 shrink-0" />
+                        <span className="">Choose Files</span>
                     </label>
                     <input type="file" id="file-input" className="hidden" />
                 </div>
