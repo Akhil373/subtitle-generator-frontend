@@ -10,9 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.2",
     "@tailwindcss/vite": "^4.1.11",
+    "axios": "^1.11.0",
+    "gsap": "^3.13.0",
     "motion": "^12.23.12",
     "motion-utils": "^12.23.6",
+    "posthog-js": "^1.261.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "tailwindcss": "^4.1.11"
