@@ -122,14 +122,14 @@ const FilesDragDrop: React.FC<FilesDragDropProps> = ({ fileState }) => {
             </div>
 
             <div className="flex w-full justify-center items-center gap-16">
-                <button
+                {(status === "idle" || status === "fail") && <button
                     onClick={uploadFile}
                     className="bg-purple-600 text-black rounded-xl cursor-pointer hover:bg-purple-900 p-[16px] font-bold w-32"
                     disabled={!file}
                 >
                     Upload
-                </button>
-                {status === "success" || status === "idle" ? (
+                </button>}
+                {(status === "success" || status === "idle" || status === 'fail') && file ? (
                     <button
                         className="bg-red-600 text-black rounded-xl cursor-pointer hover:bg-red-900 p-[16px] font-bold w-32"
                         onClick={() => {

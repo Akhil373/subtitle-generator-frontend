@@ -8,7 +8,7 @@ function App() {
     const [file, setFile] = useState<File | null>(null)
     const [progress, setProgress] = useState<number>(0)
     const [status, setStatus] = useState<
-        "idle" | "uploading" | "processing" | "success" | "fail" | "downloading"
+        "idle" | "uploading" | "processing" | "success" | "fail"
     >("idle")
 
     const uploadFile = async () => {
@@ -23,10 +23,9 @@ function App() {
 
         try {
             const response = await axios.post(
-                "https://axletoe-whisper-subtitle-generator.hf.space/generate-subtitles",
+                import.meta.env.VITE_BACKEND_URL,
                 formData,
                 {
-                    responseType: "blob",
                     onUploadProgress: (progressEvent) => {
                         const percentCompleted = Math.round(
                             (progressEvent.loaded * 100) /
@@ -39,32 +38,17 @@ function App() {
                             setProgress(0)
                         }
                     },
-                    onDownloadProgress: (progressEvent) => {
-                        setStatus("downloading")
-                        if (progressEvent.total) {
-                            const percentCompleted = Math.round(
-                                (progressEvent.loaded * 100) /
-                                    (progressEvent.total ??
-                                        progressEvent.loaded)
-                            )
-                            setProgress(percentCompleted)
-                            if(percentCompleted===100){setStatus("success")}
-                        }
-                    },
                 }
             )
-            const url = window.URL.createObjectURL(new Blob([response.data]))
-            const link = document.createElement("a")
-            link.href = url
-            link.download = "result.zip"
-            document.body.appendChild(link)
-            link.click()
-            document.body.removeChild(link)
-            window.URL.revokeObjectURL(url)
+
+            window.location.href = response.data.download_url
             setStatus("success")
         } catch (e) {
-            if(e instanceof Error) {alert("Error: " + e.message)}
-            else {alert("Unknown Error: " + e)}
+            if (e instanceof Error) {
+                alert("Error: " + e.message)
+            } else {
+                alert("Unknown Error: " + e)
+            }
             setStatus("fail")
         }
     }
@@ -81,18 +65,20 @@ function App() {
                     className="text-[32px] lg:text-[44px] bg-linear-to-r from-theme-red to-transparent lg:w-128 w-64 whitespace-pre-line rounded-2xl lg:p-4 p-2 flex justify-start items-center text-black font-extrabold mb-[16px]"
                 />
                 <div>
-                    <div className="flex w-full px-5 justify-between">
-                        <p>Progress: {progress}</p>
-                        <p>Status: {status}</p> 
+                    <div className={`flex w-full px-5 justify-between
+                        ${status === "processing" ? "flex-col items-center" : "flex-row"}    
+                    `}>
+                        {status === "processing" ? <p>No need to wait here; your download will start automatically.</p> : <p>Progress: {progress}%</p>}
+                        <p>Status: {status}</p>
                     </div>
                     <FilesDragDrop
-                        fileState= {{
+                        fileState={{
                             file,
                             setFile,
                             status,
                             setStatus,
                             setProgress,
-                            uploadFile
+                            uploadFile,
                         }}
                     />
                 </div>
