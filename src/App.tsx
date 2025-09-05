@@ -4,12 +4,24 @@ import BlurText from "./components/BlurText"
 import FilesDragDrop from "./components/FilesDragDrop"
 import TopBar from "./components/TopBar"
 
+interface GenerateSubtitlesResponse {
+    message: string
+    job_id: string
+}
+
+interface JobStatusResponse {
+    job_id: string
+    status: string
+    download_url?: string
+}
+
 function App() {
     const [file, setFile] = useState<File | null>(null)
     const [progress, setProgress] = useState<number>(0)
     const [status, setStatus] = useState<
         "idle" | "uploading" | "processing" | "success" | "fail"
     >("idle")
+    const [jobId, setJobId] = useState<null | string>(null)
 
     const uploadFile = async () => {
         if (!file) {
@@ -22,8 +34,8 @@ function App() {
         setProgress(0)
 
         try {
-            const response = await axios.post(
-                import.meta.env.VITE_BACKEND_URL,
+            const response = await axios.post<GenerateSubtitlesResponse>(
+                `${import.meta.env.VITE_BACKEND_URL}/generate-subtitles/`,
                 formData,
                 {
                     onUploadProgress: (progressEvent) => {
@@ -40,9 +52,34 @@ function App() {
                     },
                 }
             )
+            console.log(jobId)
+            const {job_id} = response.data
+            setJobId(job_id)
 
-            window.location.href = response.data.download_url
-            setStatus("success")
+            const pollInterval = setInterval(async () => {
+                try {
+                    const statusResponse = await axios.get<JobStatusResponse>(
+                        `${
+                            import.meta.env.VITE_BACKEND_URL
+                        }/job-status/${job_id}`
+                    )
+
+                    const {status, download_url} = statusResponse.data
+                    if (status === "PROCESSING") setStatus("processing")
+
+                    if (status === "COMPLETED" && download_url) {
+                        clearInterval(pollInterval)
+                        window.location.href = download_url
+                        setStatus("success")
+                    } else if (status === "FAILED") {
+                        clearInterval(pollInterval)
+                        setStatus("fail")
+                        alert("Job processing failed")
+                    }
+                } catch (error) {
+                    console.error("Error polling job status:", error)
+                }
+            }, 3000)
         } catch (e) {
             if (e instanceof Error) {
                 alert("Error: " + e.message)
@@ -65,10 +102,23 @@ function App() {
                     className="text-[32px] lg:text-[44px] bg-linear-to-r from-theme-red to-transparent lg:w-128 w-64 whitespace-pre-line rounded-2xl lg:p-4 p-2 flex justify-start items-center text-black font-extrabold mb-[16px]"
                 />
                 <div>
-                    <div className={`flex w-full px-5 justify-between
-                        ${status === "processing" ? "flex-col items-center" : "flex-row"}    
-                    `}>
-                        {status === "processing" ? <p>No need to wait here; your download will start automatically.</p> : <p>Progress: {progress}%</p>}
+                    <div
+                        className={`flex w-full px-5 justify-between
+                        ${
+                            status === "processing"
+                                ? "flex-col items-center"
+                                : "flex-row"
+                        }    
+                    `}
+                    >
+                        {status === "processing" ? (
+                            <p>
+                                No need to wait here; your download will start
+                                automatically.
+                            </p>
+                        ) : (
+                            <p>Progress: {progress}%</p>
+                        )}
                         <p>Status: {status}</p>
                     </div>
                     <FilesDragDrop
