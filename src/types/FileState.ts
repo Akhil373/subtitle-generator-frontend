@@ -11,8 +11,7 @@ export type FileState = {
     | "fail";
   setStatus: React.Dispatch<React.SetStateAction<FileState["status"]>>;
   setProgress: React.Dispatch<React.SetStateAction<number>>;
-  uploadFile: () => Promise<void>;
-  uploadYouTubeUrl: () => Promise<void>;
+  uploadContent: () => Promise<void>;
   inputMode: InputMode;
   setInputMode: React.Dispatch<React.SetStateAction<InputMode>>;
   youtubeUrl: string;

@@ -17,7 +17,7 @@ const SUPPORTED_TYPES: string[] = [
 ]
 
 const FilesDragDrop: React.FC<FilesDragDropProps> = ({ fileState }) => {
-    const {file, setFile, status, setStatus, setProgress, uploadFile, inputMode, setInputMode, youtubeUrl, setYoutubeUrl} = fileState
+    const {file, setFile, status, setStatus, setProgress, uploadContent, inputMode, setInputMode, youtubeUrl, setYoutubeUrl} = fileState
     const [isDragging, setIsDragging] = useState<boolean>(false)
     const [error, setError] = useState<string | null>()
 
@@ -61,7 +61,7 @@ const FilesDragDrop: React.FC<FilesDragDropProps> = ({ fileState }) => {
     }
 
     const handleYouTubeSubmit = async () => {
-        fileState.uploadYouTubeUrl();
+        fileState.uploadContent();
     };
 
     return (
@@ -99,7 +99,7 @@ const FilesDragDrop: React.FC<FilesDragDropProps> = ({ fileState }) => {
                     onDrop={handleDrop}
                 >
                     <div
-                        className={`p-[128px] flex gap-4 flex-col items-center justify-center lg:h-[400px] border-4 border-dashed w-[300px] h-[64px] md:h-[256px] lg:w-[512px] rounded-3xl transition-all duration-300 backdrop-blur-sm ${
+                        className={`p-[128px] flex gap-4 flex-col items-center justify-center lg:h-[400px] border-4 border-dashed w-fit h-[300px] md:w-[512px] rounded-3xl transition-all duration-300 backdrop-blur-sm ${
                             isDragging
                                 ? "border-theme-red bg-theme-red/20"
                                 : "border-white/30 bg-white/10 hover:border-white/50"
@@ -166,7 +166,7 @@ const FilesDragDrop: React.FC<FilesDragDropProps> = ({ fileState }) => {
                     <div className="flex w-full justify-center items-center gap-4 mt-8">
                         {(status === "idle" || status === "fail") && (
                             <button
-                                onClick={uploadFile}
+                                onClick={uploadContent}
                                 className="bg-purple-600 text-black rounded-xl cursor-pointer hover:bg-purple-900 disabled:bg-gray-500 disabled:cursor-not-allowed p-[16px] font-bold w-32 transition-all duration-300"
                                 disabled={!file}
                             >
