@@ -66,7 +66,6 @@ const FilesDragDrop: React.FC<FilesDragDropProps> = ({ fileState }) => {
 
     return (
         <div className="flex-1 flex gap-8 p-[16px] flex-col items-center justify-center">
-            {/* Mode Toggle */}
             <div className="flex gap-4 mb-4">
                 <button
                     onClick={() => setInputMode("file")}
@@ -193,6 +192,7 @@ const FilesDragDrop: React.FC<FilesDragDropProps> = ({ fileState }) => {
                     setYoutubeUrl={setYoutubeUrl}
                     onSubmit={handleYouTubeSubmit}
                     status={status}
+                    setStatus={setStatus}
                 />
             )}
         </div>

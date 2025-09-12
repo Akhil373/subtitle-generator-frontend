@@ -1,17 +1,20 @@
 import { useState } from "react";
+import { type FileState } from "../types/FileState";
 
 interface YouTubeInputProps {
   youtubeUrl: string;
   setYoutubeUrl: (url: string) => void;
   onSubmit: () => void;
   status: "idle" | "uploading" | "processing" | "success" | "fail";
+  setStatus:  React.Dispatch<React.SetStateAction<FileState["status"]>>;
 }
 
 const YouTubeInput: React.FC<YouTubeInputProps> = ({ 
   youtubeUrl, 
   setYoutubeUrl, 
   onSubmit,
-  status 
+  status,
+  setStatus
 }) => {
   const [isValid, setIsValid] = useState(true);
 
@@ -37,6 +40,7 @@ const YouTubeInput: React.FC<YouTubeInputProps> = ({
   const handleClear = () => {
     setYoutubeUrl("");
     setIsValid(true);
+    setStatus("idle");
   };
 
   return (
