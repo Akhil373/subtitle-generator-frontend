@@ -22,6 +22,8 @@ function App() {
         "idle" | "uploading" | "processing" | "success" | "fail"
     >("idle")
     const [jobId, setJobId] = useState<null | string>(null)
+    const [inputMode, setInputMode] = useState<"file" | "youtube">("file")
+    const [youtubeUrl, setYoutubeUrl] = useState<string>("")
 
     const uploadFile = async () => {
         if (!file) {
@@ -59,9 +61,61 @@ function App() {
             const pollInterval = setInterval(async () => {
                 try {
                     const statusResponse = await axios.get<JobStatusResponse>(
-                        `${
-                            import.meta.env.VITE_BACKEND_URL
-                        }/job-status/${job_id}`
+                        `${import.meta.env.VITE_BACKEND_URL}/job-status/${job_id}`
+                    )
+
+                    const {status, download_url} = statusResponse.data
+                    if (status === "PROCESSING") setStatus("processing")
+
+                    if (status === "COMPLETED" && download_url) {
+                        clearInterval(pollInterval)
+                        window.location.href = download_url
+                        setStatus("success")
+                    } else if (status === "FAILED") {
+                        clearInterval(pollInterval)
+                        setStatus("fail")
+                        alert("Job processing failed")
+                    }
+                } catch (error) {
+                    console.error("Error polling job status:", error)
+                }
+            }, 3000)
+        } catch (e) {
+            if (e instanceof Error) {
+                alert("Error: " + e.message)
+            } else {
+                alert("Unknown Error: " + e)
+            }
+            setStatus("fail")
+        }
+    }
+
+    const uploadYouTubeUrl = async () => {
+        if (!youtubeUrl) {
+            return
+        }
+
+        setStatus("uploading")
+        setProgress(0)
+
+        try {
+            const response = await axios.post<GenerateSubtitlesResponse>(
+                `${import.meta.env.VITE_BACKEND_URL}/generate-subtitles/`,
+                { youtube_url: youtubeUrl },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            )
+            
+            const {job_id} = response.data
+            setJobId(job_id)
+
+            const pollInterval = setInterval(async () => {
+                try {
+                    const statusResponse = await axios.get<JobStatusResponse>(
+                        `${import.meta.env.VITE_BACKEND_URL}/job-status/${job_id}`
                     )
 
                     const {status, download_url} = statusResponse.data
@@ -129,6 +183,11 @@ function App() {
                             setStatus,
                             setProgress,
                             uploadFile,
+                            uploadYouTubeUrl,
+                            inputMode,
+                            setInputMode,
+                            youtubeUrl,
+                            setYoutubeUrl,
                         }}
                     />
                 </div>

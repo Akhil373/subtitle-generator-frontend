@@ -1,3 +1,5 @@
+export type InputMode = "file" | "youtube";
+
 export type FileState = {
   file: File | null;
   setFile: React.Dispatch<React.SetStateAction<File | null>>;
@@ -10,4 +12,9 @@ export type FileState = {
   setStatus: React.Dispatch<React.SetStateAction<FileState["status"]>>;
   setProgress: React.Dispatch<React.SetStateAction<number>>;
   uploadFile: () => Promise<void>;
+  uploadYouTubeUrl: () => Promise<void>;
+  inputMode: InputMode;
+  setInputMode: React.Dispatch<React.SetStateAction<InputMode>>;
+  youtubeUrl: string;
+  setYoutubeUrl: React.Dispatch<React.SetStateAction<string>>;
 };
