@@ -1,5 +1,5 @@
 import axios from "axios"
-import {useEffect, useState} from "react"
+import { useEffect, useState } from "react"
 import BlurText from "./components/BlurText"
 import DownloadUrl from "./components/DownloadUrl"
 import FilesDragDrop from "./components/FilesDragDrop"
@@ -212,8 +212,8 @@ function App() {
                             >
                                 {status === "processing" ? (
                                     <p>
-                                        You can bookmark this page and return
-                                        later to download your subtitles.
+                                        You can bookmark this page and return later to download your subtitles.<br />
+                                        The download link will expire after 1 hour.
                                     </p>
                                 ) : status === "checking" ? (
                                     <p>
