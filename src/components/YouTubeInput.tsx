@@ -5,7 +5,7 @@ interface YouTubeInputProps {
   youtubeUrl: string;
   setYoutubeUrl: (url: string) => void;
   onSubmit: () => void;
-  status: "idle" | "uploading" | "processing" | "success" | "fail";
+  status: "idle" | "uploading" | "processing" | "success" | "fail" | "checking";
   setStatus:  React.Dispatch<React.SetStateAction<FileState["status"]>>;
 }
 
