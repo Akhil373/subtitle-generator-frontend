@@ -8,7 +8,8 @@ export type FileState = {
     | "uploading"
     | "processing"
     | "success"
-    | "fail";
+    | "fail"
+    | "checking";
   setStatus: React.Dispatch<React.SetStateAction<FileState["status"]>>;
   setProgress: React.Dispatch<React.SetStateAction<number>>;
   uploadContent: () => Promise<void>;

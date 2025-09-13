@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 .env
+eslint.config.json
+pnpm-*
+tsconfig*
+
 
 # Editor directories and files
 .vscode/*
@@ -23,3 +27,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+*.md

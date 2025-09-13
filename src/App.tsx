@@ -1,6 +1,7 @@
 import axios from "axios"
-import { useState } from "react"
+import {useEffect, useState} from "react"
 import BlurText from "./components/BlurText"
+import DownloadUrl from "./components/DownloadUrl"
 import FilesDragDrop from "./components/FilesDragDrop"
 import TopBar from "./components/TopBar"
 
@@ -19,11 +20,99 @@ function App() {
     const [file, setFile] = useState<File | null>(null)
     const [progress, setProgress] = useState<number>(0)
     const [status, setStatus] = useState<
-        "idle" | "uploading" | "processing" | "success" | "fail"
+        "idle" | "uploading" | "processing" | "success" | "fail" | "checking"
     >("idle")
     const [jobId, setJobId] = useState<null | string>(null)
     const [inputMode, setInputMode] = useState<"file" | "youtube">("file")
     const [youtubeUrl, setYoutubeUrl] = useState<string>("")
+    const [pollInterval, setPollInterval] = useState<number | null>(null)
+    const [presignedUrl, setPresignedUrl] = useState<string | null>(null)
+
+    const getJobIdFromUrl = (): string | null => {
+        const urlParams = new URLSearchParams(window.location.search)
+        return urlParams.get("job_id")
+    }
+
+    const updateUrlWithJobId = (jobId: string) => {
+        const url = new URL(window.location.href)
+        url.searchParams.set("job_id", jobId)
+        window.history.replaceState({}, "", url.toString())
+    }
+
+    const resetToInitialState = () => {
+        if (pollInterval) {
+            clearInterval(pollInterval)
+            setPollInterval(null)
+        }
+
+        const url = new URL(window.location.href)
+        url.searchParams.delete("job_id")
+        window.history.replaceState({}, "", url.toString())
+
+        setFile(null)
+        setProgress(0)
+        setStatus("idle")
+        setJobId(null)
+        setYoutubeUrl("")
+        setPresignedUrl(null)
+    }
+
+    const pollJobStatus = (jobId: string) => {
+        if (pollInterval) {
+            clearInterval(pollInterval)
+        }
+
+        const newPollInterval = setInterval(async () => {
+            try {
+                const statusResponse = await axios.get<JobStatusResponse>(
+                    `${import.meta.env.VITE_BACKEND_URL}/job-status/${jobId}`
+                )
+
+                const {status, download_url} = statusResponse.data
+
+                if (status === "PROCESSING") {
+                    setStatus("processing")
+                } else if (status === "COMPLETED" && download_url) {
+                    clearInterval(newPollInterval)
+                    setPollInterval(null)
+                    setPresignedUrl(download_url)
+                    setStatus("success")
+                } else if (status === "FAILED") {
+                    clearInterval(newPollInterval)
+                    setPollInterval(null)
+                    setStatus("fail")
+                    alert("Job processing failed")
+                }
+            } catch (error) {
+                console.error("Error polling job status:", error)
+                clearInterval(newPollInterval)
+                setPollInterval(null)
+                setStatus("fail")
+                alert("Error checking job status")
+            }
+        }, 3000)
+
+        setPollInterval(newPollInterval)
+        return newPollInterval
+    }
+
+    useEffect(() => {
+        const existingJobId = getJobIdFromUrl()
+        if (existingJobId) {
+            setJobId(existingJobId)
+            setStatus("checking")
+            pollJobStatus(existingJobId)
+        }
+    }, [])
+
+    useEffect(() => {
+        return () => {
+            if (pollInterval) {
+                clearInterval(pollInterval)
+            }
+        }
+    }, [pollInterval])
+
     const uploadContent = async () => {
         if (!file && !youtubeUrl) {
             alert("Please provide either a file or YouTube URL")
@@ -41,6 +130,11 @@ function App() {
             formData.append("file", file)
         } else if (youtubeUrl) {
             formData.append("youtube_url", youtubeUrl)
+        }
+
+        if (pollInterval) {
+            clearInterval(pollInterval)
+            setPollInterval(null)
         }
 
         setStatus("uploading")
@@ -75,34 +169,8 @@ function App() {
             console.log(jobId)
             setJobId(job_id)
 
-            const pollInterval = setInterval(async () => {
-                try {
-                    const statusResponse = await axios.get<JobStatusResponse>(
-                        `${
-                            import.meta.env.VITE_BACKEND_URL
-                        }/job-status/${job_id}`
-                    )
-
-                    const {status, download_url} = statusResponse.data
-
-                    if (status === "PROCESSING") {
-                        setStatus("processing")
-                    } else if (status === "COMPLETED" && download_url) {
-                        clearInterval(pollInterval)
-                        window.location.href = download_url
-                        setStatus("success")
-                    } else if (status === "FAILED") {
-                        clearInterval(pollInterval)
-                        setStatus("fail")
-                        alert("Job processing failed")
-                    }
-                } catch (error) {
-                    console.error("Error polling job status:", error)
-                    clearInterval(pollInterval)
-                    setStatus("fail")
-                    alert("Error checking job status")
-                }
-            }, 3000)
+            updateUrlWithJobId(job_id)
+            pollJobStatus(job_id)
         } catch (e) {
             console.error("Upload error:", e)
             if (e instanceof Error) {
@@ -126,39 +194,52 @@ function App() {
                     className="text-[32px] lg:text-[44px] bg-linear-to-r from-theme-red to-transparent lg:w-128 w-64 whitespace-pre-line rounded-2xl lg:p-4 p-2 flex justify-start items-center text-black font-extrabold mb-[16px]"
                 />
                 <div>
-                    <div
-                        className={`flex w-full px-5 justify-between
+                    {presignedUrl ? (
+                        <DownloadUrl
+                            presignedUrl={presignedUrl}
+                            resetToInitialState={resetToInitialState}
+                        />
+                    ) : (
+                        <>
+                            <div
+                                className={`flex w-full px-5 justify-between
                         ${
-                            status === "processing"
+                            status === "processing" || status === "checking"
                                 ? "flex-col items-center"
                                 : "flex-row"
-                        }    
+                        }
                     `}
-                    >
-                        {status === "processing" ? (
-                            <p>
-                                No need to wait here; your download will start
-                                automatically.
-                            </p>
-                        ) : (
-                            <p>Progress: {progress}%</p>
-                        )}
-                        <p>Status: {status}</p>
-                    </div>
-                    <FilesDragDrop
-                        fileState={{
-                            file,
-                            setFile,
-                            status,
-                            setStatus,
-                            setProgress,
-                            uploadContent,
-                            inputMode,
-                            setInputMode,
-                            youtubeUrl,
-                            setYoutubeUrl,
-                        }}
-                    />
+                            >
+                                {status === "processing" ? (
+                                    <p>
+                                        You can bookmark this page and return
+                                        later to download your subtitles.
+                                    </p>
+                                ) : status === "checking" ? (
+                                    <p>
+                                        Checking status for your previous job...
+                                    </p>
+                                ) : (
+                                    <p>Progress: {progress}%</p>
+                                )}
+                                <p>Status: {status}</p>
+                            </div>
+                            <FilesDragDrop
+                                fileState={{
+                                    file,
+                                    setFile,
+                                    status,
+                                    setStatus,
+                                    setProgress,
+                                    uploadContent,
+                                    inputMode,
+                                    setInputMode,
+                                    youtubeUrl,
+                                    setYoutubeUrl,
+                                }}
+                            />
+                        </>
+                    )}
                 </div>
             </div>
         </>

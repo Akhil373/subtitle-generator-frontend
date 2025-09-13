@@ -54,7 +54,7 @@ const YouTubeInput: React.FC<YouTubeInputProps> = ({
           className={`w-full px-6 py-4 pr-12 text-lg bg-white/10 backdrop-blur-sm border-4 rounded-3xl text-theme-white placeholder-theme-grey focus:outline-none focus:border-theme-red transition-all duration-300 ${
             isValid ? "border-white/30" : "border-theme-red"
           }`}
-          disabled={status === "uploading" || status === "processing"}
+          disabled={status === "uploading" || status === "processing" }
         />
         {youtubeUrl && (
           <button
